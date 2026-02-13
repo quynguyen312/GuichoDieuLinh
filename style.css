@@ -1,0 +1,363 @@
+/* =========================
+   CSS hoàn chỉnh cho project
+   - Thay thế toàn bộ file style.css bằng đoạn này
+   ========================= */
+
+body {
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  background-color: #ffeef8;
+  color: #333;
+  text-align: center;
+  margin: 0;
+  /* overflow sẽ bị JS bật/tắt khi mở modal để tắt scroll */
+  overflow-x: hidden;
+}
+
+/* Màn hình */
+#initial, #accept {
+  display: none;
+  padding: 20px;
+}
+
+#initial.active,
+#accept.active {
+  display: block;
+}
+
+/* Chữ */
+h1 {
+  font-size: 2.5em;
+  color: #d6336c;
+  margin: 20px 0;
+}
+
+p {
+  font-size: 1.2em;
+}
+
+/* Nút */
+#buttons {
+  margin: 20px;
+}
+
+button {
+  font-size: 1.2em;
+  padding: 10px 20px;
+  margin: 10px;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  transition: transform 0.2s;
+}
+
+#yesBtn {
+  background-color: #ff8fc7;
+  color: white;
+}
+
+#yesBtn:hover {
+  transform: scale(1.15);
+}
+
+#noBtn {
+  background-color: #ffd1e3;
+  color: #555;
+  position: relative;
+}
+
+/* Ảnh (màn đầu) */
+img {
+  width: 280px;
+  border-radius: 14px;
+  margin-top: 10px;
+}
+
+/* =========================
+   🎬 LOTTIE ANIMATION
+   ========================= */
+#lottieLove {
+  width: 260px;
+  height: 260px;
+  margin: 20px auto;
+  animation: popIn 0.6s ease-out;
+}
+
+/* Animation xuất hiện nhẹ */
+@keyframes popIn {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Overlay khóa (khi countdown hết) */
+#lockOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  color: white;
+  display: none;
+  z-index: 1200;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  padding: 20px;
+}
+
+#lockOverlay.active {
+  display: flex;
+}
+
+/* Nút âm thanh */
+#audioToggle {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  cursor: pointer;
+  z-index: 1300;
+}
+
+/* ❤️ Tim rơi */
+.heart {
+  position: absolute;
+  font-size: 2em;
+  color: #ff5f7e;
+  animation: fall 3s ease-out forwards;
+  z-index: 900;
+}
+
+@keyframes fall {
+  0% {
+    transform: translateY(-10vh) scale(0);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) scale(1.3);
+    opacity: 0;
+  }
+}
+
+/* =========================
+   💌 PHONG BÌ THƯ (ENVELOPE)
+   ========================= */
+/* 🐱 Con mèo nằm trong phong bì */
+.cat-face {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -40%);
+  font-size: 2.5rem;
+  z-index: 2;
+  pointer-events: none;
+  user-select: none;
+  transition: transform 0.4s ease;
+}
+
+/* Khi mở thư thì mèo nhô lên nhẹ */
+.envelope.open .cat-face {
+  transform: translate(-50%, -60%) scale(1.1);
+}
+
+
+.letter-section {
+  margin-top: 30px;
+  position: relative;
+  z-index: 100; /* thấp hơn modal */
+}
+
+/* Phong bì */
+.envelope {
+  width: 200px;
+  height: 120px;
+  background: linear-gradient(145deg, #ff8fc7, #ff6fae);
+  margin: 20px auto;
+  position: relative;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  display: inline-block;
+}
+
+.envelope:hover {
+  transform: translateY(-6px) scale(1.05);
+}
+
+/* Nắp thư */
+.flap {
+  position: absolute;
+  top: -60px;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-left: 100px solid transparent;
+  border-right: 100px solid transparent;
+  border-bottom: 60px solid #ff6fae;
+  transition: transform 0.6s cubic-bezier(.2,.8,.2,1);
+  transform-origin: bottom center;
+  backface-visibility: hidden;
+}
+
+/* Khi mở thư thì nắp lật lên */
+.envelope.open .flap {
+  transform: rotateX(-180deg);
+}
+
+/* Thêm hiệu ứng bóng khi mở */
+.envelope.open {
+  box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+}
+
+/* =========================
+   📝 NỘI DUNG THƯ (MODAL)
+   - Hiển thị full-screen khi .love-letter.show
+   - Có overlay mờ đằng sau
+   - Nội dung có thể cuộn
+   ========================= */
+
+.love-letter {
+  /* modal mặc định ẩn */
+  position: fixed;
+  inset: 0; /* chiếm toàn màn hình */
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.35); /* overlay đen mờ */
+  z-index: 1500;
+  padding: 30px;
+  box-sizing: border-box;
+}
+
+/* Khi show -> hiển thị modal */
+.love-letter.show {
+  display: flex;
+  animation: modalFade 0.35s ease both;
+}
+
+@keyframes modalFade {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Bên trong modal: khung thư trắng căn giữa */
+.love-letter .letter-content {
+  width: 100%;
+  max-width: 760px;
+  max-height: 80vh;
+  overflow: auto; /* nội dung dài sẽ cuộn */
+  background: #fff;
+  padding: 28px 32px;
+  border-radius: 12px;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.25);
+  text-align: left;
+  position: relative;
+}
+
+/* Close button (×) */
+.close-letter {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  color: #c0396a;
+  transition: transform 0.12s ease;
+}
+
+.close-letter:hover {
+  transform: scale(1.1);
+}
+
+/* Văn bản trong thư */
+.love-letter h3 {
+  color: #d6336c;
+  margin-top: 4px;
+  margin-bottom: 8px;
+  font-size: 1.4em;
+  text-align: center;
+}
+
+.love-letter p {
+  color: #333;
+  font-size: 1.05em;
+  line-height: 1.6;
+  margin: 10px 0;
+}
+
+/* Khi modal mở: ẩn scroll body (JS sẽ set overflow:hidden), đảm bảo modal trên cùng */
+.love-letter.show {
+  z-index: 1500;
+}
+
+/* Nếu muốn thư trượt lên từ vị trí phong bì, ta có thể thêm animation "slideFromBottom" */
+/* (JS đã xử lý mở nắp / đóng nắp; animation này chỉ làm mượt việc hiển thị) */
+@keyframes slideFromEnvelope {
+  0% { transform: translateY(18px) scale(0.98); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* khi mở, letter-content có effect nhỏ */
+.love-letter.show .letter-content {
+  animation: slideFromEnvelope 0.36s ease both;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .envelope { width: 160px; height: 96px; }
+  .flap { border-left-width: 80px; border-right-width: 80px; border-bottom-width: 48px; top: -48px; }
+  .love-letter .letter-content { padding: 20px; max-width: 92%; }
+  h1 { font-size: 2rem; }
+  button { font-size: 1em; padding: 8px 14px; }
+}
+
+/* small polish: hide decorative scrollbars on webkit */
+.love-letter .letter-content::-webkit-scrollbar { width: 8px; }
+.love-letter .letter-content::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 8px; }
+
+/* đảm bảo các phần có z-index hợp lý */
+#audioToggle { z-index: 1600; }
+#lockOverlay { z-index: 1700; }
+/* =========================
+   Responsive: đẩy modal xuống cho mobile
+   ========================= */
+
+@media (max-width: 600px) {
+  /* Khi modal show trên điện thoại, đặt overlay canh lên trên (không căn giữa) */
+  .love-letter {
+    align-items: flex-start;      /* canh modal lên trên */
+    padding-top: 18vh;            /* đẩy modal xuống (tùy chỉnh nếu cần) */
+  }
+
+  /* Khung nội dung thư */
+  .love-letter .letter-content {
+    width: 94%;
+    max-width: 720px;
+    max-height: 72vh;            /* đủ cao để đọc, nhưng không che header */
+    margin-top: 6px;             /* đặt cách nhẹ so với top overlay */
+    box-sizing: border-box;
+  }
+
+  /* Nếu envelope nằm gần header, tăng khoảng cách giữa header và envelope khi modal mở */
+  .envelope {
+    margin-top: 12px; /* nếu muốn đẩy envelope xuống nhẹ trên mobile */
+  }
+}
+/* ============== Mobile: đẩy modal xuống để không che header ============== */
+.love-letter.mobile {
+  align-items: flex-start;
+  padding-top: 20vh; /* tăng nếu modal vẫn che header, thử 22vh hoặc 25vh */
+}

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Valentine Đặc Biệt</title>
+
+<link rel="stylesheet" href="style.css">
+
+<!-- LOTTIE -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+
+<!-- TẠM CSS NHỎ CHO MÈO -->
+<style>
+/* nếu style.css đã có rule cho .cat-face thì phần này không quan trọng */
+.cat-face {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -40%);
+  font-size: 2.6rem;
+  z-index: 2;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* nếu muốn dùng ảnh cat.png thay emoji:
+.cat-face img { width: 70px; display:block; }
+*/
+</style>
+</head>
+
+<body>
+
+<!-- Nội dung ban đầu -->
+<div id="initial" class="active">
+  <h1 id="title"> Đôi lời gửi đến em 💖</h1>
+
+  <!-- Lottie thay cho ảnh (animation hiển thị ngay) -->
+  <div style="display:flex; align-items:center; justify-content:center; gap:28px; flex-wrap:wrap;">
+    <div id="mainLottie" style="width:320px; height:240px; margin:10px 0;"></div>
+  </div>
+
+  <p id="message">Cho anh xin phép làm quen em Diệu Linh nhé...😘</p>
+
+  <div id="buttons">
+    <button id="yesBtn">Có 💖</button>
+    <button id="noBtn">Không 🙃</button>
+  </div>
+
+  <p id="countdown">Thời gian còn lại: 10s</p>
+</div>
+
+<!-- Nội dung khi bấm "Có" -->
+<div id="accept">
+  <h1>Tôi biết nàng sẽ đồng ý mờ 😘</h1>
+  <p> Anh có bức tâm thư đôi lời gửi đến nàng Diệu Linh 💌❤️</p>
+  
+  
+
+  <br>
+  <br>
+    <!-- phong bì (click để mở thư). Thêm con mèo ở đây -->
+    <div id="envelope" class="envelope" onclick="openLetter()">
+      <div class="flap"></div>
+      <div class="cat-face">🐱</div>
+    </div>
+
+    <!-- THƯ (modal) - mặc định ẩn, sẽ hiện lên full màn hình khi open -->
+    <div class="love-letter" id="loveLetter" role="dialog" aria-hidden="true">
+      <div class="letter-content">
+        <!-- nút đóng: JS dùng closeLetter() -->
+        <button class="close-letter" aria-label="Đóng thư" onclick="closeLetter()">×</button>
+
+        <h3>Gửi em Diệu Linh</h3>
+        <p>
+          Cảm ơn em vì đã cho anh cơ hội được tìm hiểu em điều đó đối với anh rất trân trọng.
+          Anh thì không hứa hẹn gì, anh chỉ muốn xin phép được tìm hiểu em một cách rõ ràng hơn.
+          Không vội vàng, không áp lực, ý anh là muốn chúng ta có thể tiến xa hơnn. 
+          Dù kết quả như nào anh vẫn sẽ tôn trọng quyết định của em.
+        </p>
+         Cảm ơn em Diệu Linh đã đọc những dòng này của anh💗
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Overlay khóa màn hình -->
+<div id="lockOverlay">
+  <h1>MÀN HÌNH ĐÃ BỊ KHÓA!</h1>
+  <p>Nhưng tớ sẽ cho bạn cơ hội chọn lại...</p>
+  <button onclick="resetGame()">Chọn lại</button>
+</div>
+
+<!-- Nhạc nền -->
+<audio id="bgMusic" loop>
+  <source src="music.mp3" type="audio/mpeg">
+</audio>
+
+<button id="audioToggle">🔇</button>
+
+<script>
+/* -------------------------
+   DOM elements
+   ------------------------- */
+const yesBtn = document.getElementById('yesBtn');
+const noBtn = document.getElementById('noBtn');
+const initial = document.getElementById('initial');
+const accept = document.getElementById('accept');
+const lockOverlay = document.getElementById('lockOverlay');
+const countdownElem = document.getElementById('countdown');
+const bgMusic = document.getElementById('bgMusic');
+const audioToggle = document.getElementById('audioToggle');
+
+const mainLottie = document.getElementById('mainLottie'); // Lottie ở trang initial (thay ảnh)
+const envelope = document.getElementById('envelope');
+const loveLetter = document.getElementById('loveLetter');
+const letterContent = loveLetter.querySelector('.letter-content');
+
+let lottieInstanceMain = null;
+
+/* Âm thanh */
+audioToggle.onclick = () => {
+  if (bgMusic.paused) {
+    bgMusic.play().catch(()=>{});
+    audioToggle.textContent = '🔊';
+    isPlaying = true;
+  } else {
+    bgMusic.pause();
+    audioToggle.textContent = '🔇';
+    isPlaying = false;
+  }
+};
+function openLetter() {
+  if (!accept.classList.contains('active')) return;
+
+  envelope.classList.add('open');
+  loveLetter.classList.add('show');
+  loveLetter.setAttribute('aria-hidden', 'false');
+
+  if (window.innerWidth <= 600) {
+    loveLetter.classList.add('mobile');
+  }
+
+  document.body.style.overflow = 'hidden';
+
+  /* 🔊 TỰ ĐỘNG PHÁT NHẠC */
+  bgMusic.play().then(() => {
+    audioToggle.textContent = '🔊';
+    isPlaying = true;
+  }).catch(() => {
+    // nếu bị chặn autoplay thì không sao
+  });
+}
+
+/* Nút KHÔNG chạy */
+noBtn.onmouseover = () => {
+  noBtn.style.position = 'absolute';
+  const maxLeft = Math.max(0, window.innerWidth - noBtn.offsetWidth - 20);
+  const maxTop = Math.max(0, window.innerHeight - noBtn.offsetHeight - 20);
+  noBtn.style.left = Math.random() * maxLeft + 'px';
+  noBtn.style.top = Math.random() * maxTop + 'px';
+};
+
+/* LOAD LOTTIE NGAY LẬP TỨC TRÊN TRANG INITIAL (thay ảnh) */
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    lottieInstanceMain = lottie.loadAnimation({
+      container: mainLottie,
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: 'cute-bunnies-love.json' // <-- đặt file JSON đúng đường dẫn
+    });
+  } catch (e) {
+    console.warn('Lottie load thất bại hoặc file không tìm thấy:', e);
+    // nếu lottie fail, mainLottie vẫn tồn tại: em có thể hiển thị fallback image bằng CSS/HTML nếu muốn
+  }
+});
+
+/* Bấm CÓ
+   - animation đã chạy trên initial thì ẩn/dừng nó
+   - hiện tim rơi
+   - delay rồi chuyển sang accept (trang thư)
+*/
+yesBtn.onclick = () => {
+  clearInterval(countdownInterval);
+
+  // tạo tim rơi
+  for (let i = 0; i < 18; i++) {
+    let heart = document.createElement('div');
+    heart.className = 'heart';
+    heart.innerText = '❤️';
+    heart.style.left = Math.random() * 100 + 'vw';
+    document.body.appendChild(heart);
+    setTimeout(() => heart.remove(), 3000);
+  }
+
+  // delay nhỏ để nhìn thấy tim/lottie rồi chuyển trang
+  setTimeout(() => {
+    // tắt/hủy lottie trên initial
+    if (lottieInstanceMain) {
+      try {
+        lottieInstanceMain.stop();
+        lottieInstanceMain.destroy();
+      } catch (e) { /* ignore */ }
+      lottieInstanceMain = null;
+    }
+    // ẩn container lottie để không chiếm chỗ
+    if (mainLottie) mainLottie.style.display = 'none';
+
+    // chuyển màn hình
+    initial.classList.remove('active');
+    accept.classList.add('active');
+  }, 700);
+};
+
+/* Reset về ban đầu */
+function resetGame() {
+  lockOverlay.classList.remove('active');
+  accept.classList.remove('active');
+  initial.classList.add('active');
+
+  // reset nút Không
+  noBtn.style.position = 'relative';
+  noBtn.style.left = '0';
+  noBtn.style.top = '0';
+
+  // ẩn giấy thư nếu mở
+  closeLetterImmediate();
+
+  timeLeft = 10;
+  countdownElem.textContent = `Thời gian còn lại: ${timeLeft}s`;
+  clearInterval(countdownInterval);
+  countdownInterval = setInterval(updateCountdown, 1000);
+
+  // reload or re-init lottie on initial (bật lại animation)
+  if (!lottieInstanceMain && mainLottie) {
+    try {
+      lottieInstanceMain = lottie.loadAnimation({
+        container: mainLottie,
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: 'cute-bunnies-love.json'
+      });
+      mainLottie.style.display = 'block';
+    } catch (e) {}
+  }
+}
+
+/* Countdown */
+let timeLeft = 10;
+let countdownInterval = setInterval(updateCountdown, 1000);
+
+function updateCountdown() {
+  timeLeft--;
+  countdownElem.textContent = `Thời gian còn lại: ${timeLeft}s`;
+  if (timeLeft <= 0) {
+    clearInterval(countdownInterval);
+    lockOverlay.classList.add('active');
+  }
+}
+
+/* MỞ THƯ - animation "bay ra" từ phong bì vào giữa màn hình */
+function openLetter() {
+  if (!accept.classList.contains('active')) return; // chỉ khi ở trang accept
+
+  // bật nắp phong bì
+  envelope.classList.add('open');
+
+  // show modal (overlay)
+  loveLetter.classList.add('show');
+  loveLetter.setAttribute('aria-hidden', 'false');
+
+  // ==== THÊM 2 DÒNG NÀY: nếu mobile thì add class 'mobile' để CSS điều chỉnh vị trí modal
+  if (window.innerWidth <= 600) {
+    loveLetter.classList.add('mobile');
+     bgMusic.pause();
+  audioToggle.textContent = '🔇';
+  isPlaying = false;
+  }
+  // ==== END THÊM
+
+  // disable scroll body
+  document.body.style.overflow = 'hidden';
+
+  // animate: từ vị trí phong bì -> center (mượt bằng Web Animations API)
+  requestAnimationFrame(() => {
+    const envRect = envelope.getBoundingClientRect();
+    const contRect = letterContent.getBoundingClientRect();
+
+    const envCX = envRect.left + envRect.width / 2;
+    const envCY = envRect.top + envRect.height / 2;
+    const contCX = contRect.left + contRect.width / 2;
+    const contCY = contRect.top + contRect.height / 2;
+
+    const deltaX = envCX - contCX;
+    const deltaY = envCY - contCY;
+
+    const startScale = Math.min(envRect.width / contRect.width, envRect.height / contRect.height, 0.35);
+
+    letterContent.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${startScale})`;
+    letterContent.style.opacity = '0.0';
+
+    const anim = letterContent.animate([
+      { transform: `translate(${deltaX}px, ${deltaY}px) scale(${startScale})`, opacity: 0 },
+      { transform: 'translate(0px, 0px) scale(1)', opacity: 1 }
+    ], {
+      duration: 420,
+      easing: 'cubic-bezier(.2,.8,.2,1)',
+      fill: 'forwards'
+    });
+
+    anim.finished.then(() => {
+      letterContent.style.transform = '';
+      letterContent.style.opacity = '';
+    });
+  });
+}
+
+/* ĐÓNG THƯ - animation "chui lại vào phong bì" rồi hide */
+function closeLetter() {
+  if (!loveLetter.classList.contains('show')) return;
+
+  const envRect = envelope.getBoundingClientRect();
+  const contRect = letterContent.getBoundingClientRect();
+
+  const envCX = envRect.left + envRect.width / 2;
+  const envCY = envRect.top + envRect.height / 2;
+  const contCX = contRect.left + contRect.width / 2;
+  const contCY = contRect.top + contRect.height / 2;
+
+  const deltaX = envCX - contCX;
+  const deltaY = envCY - contCY;
+
+  const endScale = Math.min(envRect.width / contRect.width, envRect.height / contRect.height, 0.35);
+
+  const anim = letterContent.animate([
+    { transform: 'translate(0px,0px) scale(1)', opacity: 1 },
+    { transform: `translate(${deltaX}px, ${deltaY}px) scale(${endScale})`, opacity: 0 }
+  ], {
+    duration: 420,
+    easing: 'cubic-bezier(.2,.8,.2,1)',
+    fill: 'forwards'
+  });
+
+  anim.finished.then(() => {
+    loveLetter.classList.remove('show');
+    loveLetter.setAttribute('aria-hidden', 'true');
+
+    letterContent.style.transform = '';
+    letterContent.style.opacity = '';
+
+    envelope.classList.remove('open');
+
+    // ==== THÊM DÒNG NÀY: remove class 'mobile' khi đóng
+    loveLetter.classList.remove('mobile');
+    // ==== END THÊM
+
+    document.body.style.overflow = '';
+  });
+}
+
+/* đóng nhanh (không animate) dùng khi reset */
+function closeLetterImmediate() {
+  loveLetter.classList.remove('show');
+  loveLetter.setAttribute('aria-hidden', 'true');
+  letterContent.style.transform = '';
+  letterContent.style.opacity = '';
+  envelope.classList.remove('open');
+
+  // ==== THÊM DÒNG NÀY: remove class 'mobile' khi reset
+  loveLetter.classList.remove('mobile');
+  // ==== END THÊM
+
+  document.body.style.overflow = '';
+}
+
+/* ESC để đóng */
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeLetter();
+  }
+});
+</script>
+
+</body>
+</html>
